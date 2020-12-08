@@ -63,13 +63,9 @@ Managed Availability is the integration of built-in, active monitoring and the E
 When something is unhealthy, the first action is to attempt to recover that component. This could include multi-stage recovery actions; for example:
 
 1. Restart the application pool.
-
 2. Restart the service.
-
 3. Restart the server.
-
 4. Take the server offline so that it no longer accepts traffic.
-
 If the recovery actions are unsuccessful, the system escalates the issue to a human through event log notifications.
 
 Managed availability is implemented in the form of two services:
@@ -81,9 +77,7 @@ Managed availability is implemented in the form of two services:
 Managed availability uses persistent storage to perform its functions:
 
 - XML configuration files are used to initialize the work item definitions during startup of the worker process.
-
 - The registry is used to store runtime data, such as bookmarks.
-
 - The crimson channel event log infrastructure is used to store the work item results.
 
 For more information about managed availability, see [Managed availability](managed-availability/managed-availability.md).
@@ -103,20 +97,15 @@ For more information, see [Managed Store](https://docs.microsoft.com/exchange/ma
 Although the storage improvements in Exchange are designed primarily for just a bunch of disks (JBOD) configurations, they're available for use by all supported storage configurations. One such feature is the ability to host multiple databases on the same volume. This feature is about Exchange optimizing for large disks. These optimizations result in a much more efficient use of large disks in terms of capacity, IOPS, and reseed times, and they're meant to address the challenges associated with running in a JBOD storage configuration:
 
 - Database sizes must be manageable.
-
 - Reseed operations must be fast and reliable.
-
 - Although storage capacity is increasing, IOPS aren't.
-
 - Disks hosting passive database copies are underutilized in terms of IOPS.
-
 - Lagged copies have asymmetric storage requirements.
-
 - Limited agility exists to recover from low disk space conditions.
 
 The trend of increasing storage capacity continues. For example, the Exchange best practice guideline for maximum database size (2 terabytes) on an 8 terabyte drive means you would waste more than 5 terabytes of disk space.
 
-A solution would be to simply grow the databases larger, but that inhibits manageability because it might introduce long reseed times (including operationally unmanageable reseed times) and compromised reliability of copying that amount of data over the network.
+A solution would be to simply grow the databases larger, but that inhibits manageability. A larger database might introducing long reseed times (including operationally unmanageable reseed times) and compromised reliability of copying that amount of data over the network.
 
 In addition, in the Exchange 2010 model, the disk storing a passive copy is underutilized in terms of IOPS. In the case of a lagged passive copy, not only is the disk underutilized in terms of IOPS, but it's also asymmetric in terms of its size, relative to the disks used to store the active and non-lagged passive copies.
 
@@ -135,11 +124,8 @@ In the configuration in the diagram, there are four copies of each database: one
 In addition, activation preference is configured so that it's balanced across the DAG and across each server. For example:
 
 - The active copy will have an activation preference value of 1.
-
 - The first passive copy will have an activation preference value of 2.
-
 - The second passive copy will have an activation preference value of 3.
-
 - The lagged copy will have an activation preference value of 4.
 
 In addition to having a better distribution of users across the existing volumes, another benefit of using multiple databases per disk is a reduction in the amount of time to restore data protection for failures that require a reseed (for example, disk failure).
@@ -172,21 +158,23 @@ Automatic recovery from storage failures allows the system to recover from failu
 
 Even in JBOD environments, storage array controllers can have issues, such as crashing or hanging. The following table lists features that provide hung I/O detection and recovery features that provide enhanced resilience.
 
-|**Name**|**Check**|**Action**|**Threshold**|
-|:-----|:-----|:-----|:-----|
+|Name|Check|Action|Threshold|
+|---|---|---|---|
 |ESE Database Hung IO Detection|ESE checks for outstanding I/Os|Generates a failure item in the crimson channel to restart the server|240 seconds|
 |Failure Item Channel Heartbeat|Ensures failure items can be written to and read from crimson channel|Replication service heartbeats crimson channel and restart server on failures|30 seconds|
 |System Disk Heartbeat|Verifies server's system disk state|Periodically sends unbuffered I/O to system disk; restarts server on heartbeat time out|120 seconds|
+|
 
 Exchange 2013 and later enhances server and storage resilience by including behaviors for other serious conditions. These conditions and behaviors are described in the following table.
 
-|**Name**|**Check**|**Action**|**Threshold**|
-|:-----|:-----|:-----|:-----|
+|Name|Check|Action|Threshold|
+|---|---|---|---|
 |System bad state|No threads, including non-managed threads, can be scheduled|Restart the server|302 seconds|
 |Long I/O times|I/O operation latency measurements|Restart the server|41 seconds|
-|Replication service memory use|Measure the working set of MSExchangeRepl.exe|1: Log event 4395 in the crimson channel with a service termination request  <br/> 2: Initiate termination of MSExchangeRepl.exe  <br/> 3: If service termination fails, restart the server|4 gigabyte (GB)|
+|Replication service memory use|Measure the working set of MSExchangeRepl.exe|<ol><li>Log event 4395 in the crimson channel with a service termination request.</li><li>Initiate termination of MSExchangeRepl.exe.</li><li>If service termination fails, restart the server.</li></ol>|4 gigabyte (GB)|
 |System Event 129 (Bus reset)|Check for Event 129 in System event log|Restart the server|When event occurs|
 |Cluster database hang|Global Update Manager updates are blocked|Restart the server|When event occurs|
+|
 
 ## Lagged copy enhancements
 
@@ -197,21 +185,15 @@ Safety Net takes some responsibility from shadow redundancy in DAG environments.
 With Safety Net, activating a lagged database copy becomes significantly easier. For example, consider a lagged copy that has a 2-day replay lag. In that case, you would configure Safety Net for a period of 2 days. If you encounter a situation in which you need to use your lagged copy, you can:
 
 1. Suspend replication to it.
-
 2. Copy it twice (to preserve the lagged nature of the database and to create an extra copy in case you need it).
-
 3. Take a copy and discard all the log files, except for those in the required range.
-
 4. Mount the copy, which triggers an automatic request to Safety Net to redeliver the last two days of mail.
 
 With Safety Net, you don't need to hunt for where the point of corruption was introduced. You get the last two days mail, minus the data ordinarily lost on a lossy failover.
 
 Lagged copies can now care for themselves by invoking automatic log replay to play down the log files in certain scenarios:
-
 - When a low disk space threshold is reached
-
 - When the lagged copy has physical corruption and needs to be page patched
-
 - When there are fewer than three available healthy copies (active or passive only; lagged database copies are not counted) for more than 24 hours
 
 In Exchange 2010, page patching wasn't available for lagged copies. In Exchange 2013 or later, page patching is available for lagged copies through this automatic play down feature. If the system detects that page patching is required for a lagged copy, the logs are automatically replayed into the lagged copy to perform page patching. Lagged copies also invoke this auto replay feature when a low disk space threshold has been reached, and when the lagged copy has been detected as the only available copy for a specific period of time.
@@ -224,11 +206,15 @@ Set-DatabaseAvailabilityGroup <DAGName> -ReplayLagManagerEnabled $true
 
 After being enabled, play down occurs when there are fewer than three copies. You can change the default value of 3, by modifying the following DWORD registry value.
 
- **HKLM\Software\Microsoft\ExchangeServer\v15\Replay\Parameters\ReplayLagManagerNumAvailableCopies**
+```text
+HKLM\Software\Microsoft\ExchangeServer\v15\Replay\Parameters\ReplayLagManagerNumAvailableCopies
+```
 
 To enable play down for low disk space thresholds, you must configure the following registry entry.
 
- **HKLM\Software\Microsoft\ExchangeServer\v15\Replay\Parameters\ReplayLagLowSpacePlaydownThresholdInMB**
+```text
+ HKLM\Software\Microsoft\ExchangeServer\v15\Replay\Parameters\ReplayLagLowSpacePlaydownThresholdInMB
+ ```
 
 After configuring either of these registry settings, restart the Microsoft Exchange DAG Management service for the changes to take effect.
 
@@ -245,9 +231,7 @@ The CheckDatabaseRedundancy.ps1 script was introduced in Exchange 2010. As its n
 Single copy conditions include, but aren't limited to:
 
 - Failure of an active copy to replicate to any passive copy.
-
 - Failure of all passive copies, which includes FailedAndSuspended and Failed states in addition to healthy states where the copy is behind in log copying or replay. Note that lagged copies aren't considered behind if they're within ten minutes in replaying their logs to their lag period.
-
 - Failure of the system to accurately know the current log generation of the active copy.
 
 Because it's a top priority for administrators to know when they're down to a single healthy copy of a database, the CheckDatabaseRedundancy.ps1 script has been replaced with integrated, native functionality that's part of managed availability's DataProtection Health Set.
@@ -255,7 +239,6 @@ Because it's a top priority for administrators to know when they're down to a si
 The native functionality still alerts administrators through event log notifications, and to distinguish Exchange 2013 or later alerts from Exchange 2010, Exchange now uses the following Event IDs:
 
 - Event 4138 (Red Alert)
-
 - Event 4139 (Green Alert)
 
 The native functionality has been enhanced to reduce alert noise that occurs when multiple databases on the same server enter into a single copy condition. In Exchange 2010, single copy alerts were generated on a per-database level. As a result, a server-wide issue that affected multiple databases and multiple database copies could cause alert storms. Because several failures are server-wide (for example, controller or memory problems), there was a good chance that an alert storm would occur for each server incident.
@@ -277,11 +260,8 @@ In addition, by default, DAG networks are now automatically managed by the syste
 Best copy selection (BCS) is an internal algorithm process for finding the best copy of an individual database to activate, given a list of potential copies for activation and their health and status. Active Manager selects the best available (and unblocked) copy to become the new active database copy when the existing active database copy fails or when an administrator performs a targetless switchover. In Exchange 2010, the BCS process evaluated several aspects of each database copy to determine the best copy to activate. These included:
 
 - Copy queue length
-
 - Replay queue length
-
 - Database status
-
 - Content index status
 
 In Exchange 2013 or later, Active Manager performs the same BCS checks and phases to determine replication health, but it now also includes the use of a constraint of the decreasing order of health states. As a result of these changes, BCS is now called best copy and server selection (BCSS).
@@ -309,13 +289,9 @@ All DAGs on Exchange servers running Windows Server 2008 R2 or Windows Server 20
 Windows Server 2012 R2 or later enables you to create a failover cluster without an administrative access point. Windows failover clusters without administrative access points have the following characteristics:
 
 - No IP address is assigned to the cluster, so there's no IP Address Resource in the cluster core resource group.
-
 - No network name is assigned to the cluster, so there's no Network Name Resource in the cluster core resource group.
-
 - The name of the cluster isn't registered in DNS and the cluster name isn't resolvable on the network.
-
 - A cluster name object (CNO) isn't created in Active Directory.
-
 - You can't manage the Windows failover cluster using the Failover Cluster Management tool. Instead, you need to use Windows PowerShell and you need to run the PowerShell cmdlets against the individual cluster members.
 
 Exchange 2013 SP1 or later running on Exchange on Windows Server 2012 R2 or later enables you to create a DAG without a cluster administrative access point. For more information, see [Creating DAGs](manage-ha/manage-dags.md#creating-dags) and [Create a database availability group](manage-ha/create-dags.md).
