@@ -163,7 +163,6 @@ Even in JBOD environments, storage array controllers can have issues, such as cr
 |ESE Database Hung IO Detection|ESE checks for outstanding I/Os|Generates a failure item in the crimson channel to restart the server|240 seconds|
 |Failure Item Channel Heartbeat|Ensures failure items can be written to and read from crimson channel|Replication service heartbeats crimson channel and restart server on failures|30 seconds|
 |System Disk Heartbeat|Verifies server's system disk state|Periodically sends unbuffered I/O to system disk; restarts server on heartbeat time out|120 seconds|
-|
 
 Exchange 2013 and later enhances server and storage resilience by including behaviors for other serious conditions. These conditions and behaviors are described in the following table.
 
