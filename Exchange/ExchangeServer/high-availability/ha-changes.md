@@ -105,7 +105,7 @@ Although the storage improvements in Exchange are designed primarily for just a 
 
 The trend of increasing storage capacity continues. For example, the Exchange best practice guideline for maximum database size (2 terabytes) on an 8 terabyte drive means you would waste more than 5 terabytes of disk space.
 
-A solution would be to simply grow the databases larger, but that inhibits manageability. A larger database might introducing long reseed times (including operationally unmanageable reseed times) and compromised reliability of copying that amount of data over the network.
+A solution would be to simply grow the databases larger, but that inhibits manageability. A larger database might introduce long reseed times (including operationally unmanageable reseed times) and compromised reliability of copying that amount of data over the network.
 
 In addition, in the Exchange 2010 model, the disk storing a passive copy is underutilized in terms of IOPS. In the case of a lagged passive copy, not only is the disk underutilized in terms of IOPS, but it's also asymmetric in terms of its size, relative to the disks used to store the active and non-lagged passive copies.
 
