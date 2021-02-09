@@ -170,7 +170,7 @@ Exchange 2013 and later enhances server and storage resilience by including beha
 |---|---|---|---|
 |System bad state|No threads, including non-managed threads, can be scheduled|Restart the server|302 seconds|
 |Long I/O times|I/O operation latency measurements|Restart the server|41 seconds|
-|Replication service memory use|Measure the working set of MSExchangeRepl.exe|<ol><li>Log event 4395 in the crimson channel with a service termination request.</li><li>Initiate termination of MSExchangeRepl.exe.</li><li>If service termination fails, restart the server.</li></ol>|4 gigabyte (GB)|
+|Replication service memory use|Measure the working set of MSExchangeRepl.exe|<ol><li>Log event 4395 in the crimson channel with a service termination request</li><li>Initiate termination of MSExchangeRepl.exe</li><li>If service termination fails, restart the server</li></ol>|4 gigabyte (GB)|
 |System Event 129 (Bus reset)|Check for Event 129 in System event log|Restart the server|When event occurs|
 |Cluster database hang|Global Update Manager updates are blocked|Restart the server|When event occurs|
 
